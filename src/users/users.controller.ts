@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Post, Param, ParseUUIDPipe, Patch } from '@nestjs/common';
-
+import { UpdateUserDTO } from './dto/updateUser.dto';
 import { CreateUserDTO } from './dto/createUser.dto';
 import {UsersService} from './users.service';
 
@@ -11,7 +11,7 @@ export class UsersController {
 
     @Post()
     create(@Body() req:CreateUserDTO){
-        return this.usersService.create();
+        return this.usersService.create(req);
     }
 
 

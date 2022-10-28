@@ -1,22 +1,45 @@
-import {Injectable} from '@nestjs/common';
+import {Injectable, HttpException, HttpStatus} from '@nestjs/common';
+import { users } from '@prisma/client';
+import { PrismaService } from 'src/prisma.service';
 import { CreateUserDTO } from './dto/createUser.dto';
 import { UpdateUserDTO } from './dto/updateUser.dto';
 
 @Injectable()
 export class UsersService {
-    async create(): Promise<string> {
-        return 'Usuario criado com sucesso';
+    update(id: number, req: CreateUserDTO) {
+        throw new Error('Method not implemented.');
     }
-
-
-    async findAll(): Promise<string> {
-    return 'Lista de usuários';
+    findOne(id: number) {
+        throw new Error('Method not implemented.');
     }
+    findAll() {
+        throw new Error('Method not implemented.');
+    }
+    constructor(private prisma: PrismaService) {}
 
-    async findOne(id: number): Promise<string> {
-    return `Usuário ${id} encontrado`;
-   }
-   async update(id: number, req: UpdateUserDTO): Promise<string> {
-        return `Usuário ${id} atualizado`;
+
+    async create(data: CreateUserDTO): Promise<users> {
+const {name, email, password} = data;  
+const user = await this.prisma.users.create({
+    data: {
+        name,
+        email,
+        password,
+    },
+});
+if (!user) {
+    throw new HttpException(
+      {
+        status: HttpStatus.FORBIDDEN,
+        message: 'Erro ao criar usuário!',
+      },
+      HttpStatus.FORBIDDEN,
+    );
+  }
+    return user;
 }
+    
+
+
+  
 }
