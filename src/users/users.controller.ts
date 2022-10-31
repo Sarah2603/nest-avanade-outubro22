@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Param, ParseUUIDPipe, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Post, Param, ParseUUIDPipe, Patch, ParseIntPipe } from '@nestjs/common';
 import { UpdateUserDTO } from './dto/updateUser.dto';
 import { CreateUserDTO } from './dto/createUser.dto';
 import {UsersService} from './users.service';
@@ -21,12 +21,12 @@ findAll(){
 }
 
 @Get(':id')
-findOne(@Param('id', ParseUUIDPipe) id: number){
+findOne(@Param('id', ParseIntPipe) id: number){
     return this.usersService.findOne(id);
 }
 
 @Patch(':id')
-update(@Param('id', ParseUUIDPipe) id: number, @Body() req: CreateUserDTO){
+update(@Param('id', ParseIntPipe) id: number, @Body() req: CreateUserDTO){
     return this.usersService.update(id, req);
 }
 }
