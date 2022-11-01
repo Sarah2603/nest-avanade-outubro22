@@ -1,27 +1,39 @@
+
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { users } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 import { CreateUserDTO } from './dto/createUser.dto';
 import { UpdateUserDTO } from './dto/updateUser.dto';
-
+import * as bcrypt from 'bcrypt';
+import { EmailService } from '../email/email.service';
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private emailService: EmailService,
+  ) {}
 
-  
+  // await this.verifyUserExists('gabriel@email.com',false);
   async verifyUserExists(email: string): Promise<boolean> {
     const user = await this.prisma.users.findUnique({
       where: {
-        email,
+        email: email,
       },
     });
     return user ? true : false;
   }
 
+  async crypto(password: string): Promise<string> {
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    return hashedPassword;
+  }
+
   async create(data: CreateUserDTO): Promise<users> {
     const { name, email, password } = data;
 
-   
+    
     const checkUser = await this.verifyUserExists(email);
     let user = undefined;
 
@@ -30,9 +42,20 @@ export class UsersService {
         data: {
           name,
           email,
-          password,
+          password: await this.crypto(password),
         },
       });
+      
+      if (
+        await this.emailService.sendEmail(
+          email,
+          'Bem vindo ao sistema',
+          'Você se cadastrou no site Fiap Avanade',
+          {},
+        )
+      ) {
+        console.log('Email enviado com sucesso!');
+      }
     }
 
     if (!user) {
@@ -47,12 +70,16 @@ export class UsersService {
     return user;
   }
 
-  async findAll(): Promise<string> {
-    return 'Lista de usuários!';
+  async findAll(): Promise<users[]> {
+    return await this.prisma.users.findMany();
   }
 
-  async findOne(id: number): Promise<string> {
-    return `Usuário ${id}!`;
+  async findOne(id: number): Promise<users> {
+    return await this.prisma.users.findUnique({
+      where: {
+        id: id,
+      },
+    });
   }
 
   async update(id: number, req: UpdateUserDTO): Promise<string> {
